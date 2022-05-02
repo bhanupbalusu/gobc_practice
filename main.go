@@ -1,56 +1,38 @@
 package main
 
+// Block
+// struct - prevHash, data, hash, nonce
+// func - CreateBlock, Genesis
+
+// Blockchain
+// struct - []Block
+// func - InitBlockchain
+// method - AddBlock
+
+// ProofOfWork
+// struct - block, target
+// func - NewProof, ToHex
+// method - InitData, RunProof, Validate
+
 import (
-	"bytes"
-	"crypto/sha256"
 	"fmt"
+	"strconv"
+
+	bc "github.com/bhanupbalusu/gobc_practice/blockchain"
 )
 
-type Block struct {
-	PrevHash []byte
-	Data     []byte
-	Hash     []byte
-}
-
-type Blockchain struct {
-	Blocks []*Block
-}
-
-func (b *Block) DeriveHash() {
-	info := bytes.Join([][]byte{b.Data, b.PrevHash}, []byte{})
-	hash := sha256.Sum256(info)
-	b.Hash = hash[:]
-}
-
-func CreateBlock(data string, prevHash []byte) *Block {
-	block := &Block{prevHash, []byte(data), []byte{}}
-	block.DeriveHash()
-	return block
-}
-
-func GenesisBlock() *Block {
-	return CreateBlock("Genesis", []byte{})
-}
-
-func (chain *Blockchain) AddBlock(data string) {
-	prevBlock := chain.Blocks[len(chain.Blocks)-1]
-	newBlock := CreateBlock(data, prevBlock.Hash)
-	chain.Blocks = append(chain.Blocks, newBlock)
-}
-
-func InitBlockchain() *Blockchain {
-	return &Blockchain{[]*Block{GenesisBlock()}}
-}
-
 func main() {
-	chain := InitBlockchain()
-	chain.AddBlock("First Block After Genesis Block ...")
-	chain.AddBlock("Second Block After Genesis Block ...")
-	chain.AddBlock("Third Block After Genesis Block ...")
+	chain := bc.InitBlockchain()
+	chain.AddBlock("First Block after Genesis Block.")
+	chain.AddBlock("Second Block after Genesis Block.")
+	chain.AddBlock("Third Block after Genesis Block.")
 
 	for _, block := range chain.Blocks {
-		fmt.Printf("Previous Hash : %x\n", block.PrevHash)
-		fmt.Printf("Data : %s\n", block.Data)
-		fmt.Printf("Hash : %x\n\n", block.Hash)
+		fmt.Printf("\nPrevious Hash : %x\n", block.PrevHash)
+		fmt.Printf("Block Data : %s\n", block.Data)
+		fmt.Printf("Hash : %x\n", block.Hash)
+		fmt.Printf("Nonce : %d\n", block.Nonce)
+		pow := bc.NewProofOfWork(block)
+		fmt.Printf("Block is Validated : %s\n", strconv.FormatBool(pow.Validate()))
 	}
 }
